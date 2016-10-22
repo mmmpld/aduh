@@ -1,1 +1,1 @@
-worker: python hangupsbot/hangupsbot.py
+worker: python hangupsbot/hangupsbot.py -d
