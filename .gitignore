@@ -14,3 +14,5 @@ aiohttp
 # Prevent telesync from saving photos
 *.jpg 
 
+.env
+hangupsbot/cookies.json

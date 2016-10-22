@@ -1,1 +1,1 @@
-worker: python hangupsbot/hangupsbot.py -d
+worker: python hangupsbot/hangupsbot.py -d --cookies cookies.json
