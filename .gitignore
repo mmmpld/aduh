@@ -15,4 +15,4 @@ aiohttp
 *.jpg 
 
 .env
-hangupsbot/cookies.json
+hangupsbot/config/cookies.json
