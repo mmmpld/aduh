@@ -32,7 +32,6 @@
     "subscribe",
     "autoreply",
     "dnd",
-    "starter",
     "remind"
   ],
   "silentmode": false
