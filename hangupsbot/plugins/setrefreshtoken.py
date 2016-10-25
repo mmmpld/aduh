@@ -5,3 +5,8 @@ def _initialise(bot):
 
 def setrefreshtoken(bot, event, *args):
     print("lets set the current refresh token!")
+    token = "real token here"
+    yield from bot.coro_send_message(
+        event.conv,
+        _("set current refresh token to {}").format(
+            token))
