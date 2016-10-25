@@ -32,6 +32,8 @@
     "subscribe",
     "autoreply",
     "dnd",
+    "starter",
+    "setrefreshtoken",
     "remind"
   ],
   "silentmode": false

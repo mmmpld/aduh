@@ -980,6 +980,8 @@ def main():
 
     # If there is no config file in user data directory, copy default one there
     if not os.path.isfile(args.config):
+        print("no config file found for: ")
+        print(args.config)
         try:
             shutil.copy(os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), 'config.json')),
                         args.config)
@@ -989,6 +991,7 @@ def main():
     configure_logging(args)
 
     # initialise the bot
+    print("cookies: " + args.cookies)
     bot = HangupsBot(args.cookies, args.config, args.retries, args.memory)
 
     # start the bot
