@@ -1,1 +1,1 @@
-worker: python hangupsbot/hangupsbot.py -d --cookies hangupsbot/config/cookies.json --config hangupsbot/config/config.json
+worker: python aduh.py
