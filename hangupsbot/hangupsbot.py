@@ -974,6 +974,7 @@ def main():
         directory = os.path.dirname(path)
         if directory and not os.path.isdir(directory):
             try:
+                print("making path: " + path)
                 os.makedirs(directory)
             except OSError as e:
                 sys.exit(_('Failed to create directory: {}').format(e))
