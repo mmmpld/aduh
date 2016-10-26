@@ -14,9 +14,7 @@
   "autoreplies_enabled": true,
   "commands_enabled": true,
   "commands_user": [],
-  "conversations": {
-    }
-  },
+  "conversations": {},
   "discord_token": "",
   "link_to_guide": "https://github.com/hangoutsbot/hangoutsbot/wiki/User-Guide",
   "mentionall": true,
