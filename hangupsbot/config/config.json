@@ -31,7 +31,9 @@
     "mentions",
     "subscribe",
     "starter",
-    "setrefreshtoken"
+    "setrefreshtoken",
+    "discord"
   ],
-  "silentmode": false
+  "silentmode": false,
+  "discord_token": ""
 }
