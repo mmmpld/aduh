@@ -17,6 +17,8 @@ import plugins
 import discord
 import asyncio
 import logging
+import aiohttp
+import io
 import os
 
 logger = logging.getLogger(__name__)
@@ -42,9 +44,18 @@ def on_message(message):
     conv_config = _bot.config.get_by_path(["conversations"])
     for conv_id, config in conv_config.items():
         if config.get("discord_sync") == message.channel.id:
-            msg = "<b>{}</b>: {}".format(message.author.display_name, message.content)
+            msg = "<b>{}</b>: {}".format(message.author.display_name, message.clean_content)
             sending += 1
             yield from _bot.coro_send_message(conv_id, msg, context={'discord': True})
+
+            for a in message.attachments:
+              r = yield from aiohttp.request('get', a['url'])
+              raw = yield from r.read()
+              image_data = io.BytesIO(raw)
+              logger.debug("uploading: {}".format(a['url']))
+              sending += 1
+              image_id = yield from _bot._client.upload_image(image_data, filename=a['filename'])
+              yield from _bot.coro_send_message(conv_id, None, image_id=image_id, context={'discord': True})
 
 def _initialise(bot):
     global _bot
@@ -79,15 +90,21 @@ def _handle_hangout_message(bot, event):
                 logger.debug('attempting to execute %s', command)
                 yield from _bot._handlers.handle_command(event)
             else:
-                fullname = event.user.full_name
-                msg = "**{}**: {}".format(fullname, event.text)
-                yield from client.send_message(channel, msg)
+                if event.from_bot:
+                    yield from client.send_message(channel, event.text)
+                else:
+                    fullname = event.user.full_name
+                    msg = "**{}**: {}".format(fullname, event.text)
+                    yield from client.send_message(channel, msg)
         else:
             logger.debug('channel {} not found'.format(discord_channel))
 
 def dsync(bot, event, discord_channel=None):
     ''' Sync a hangout to a discord channel. Usage - "/bot dsync 123456789" Say "whereami" in the channel once the bot has been added to get the channel id" '''
-    bot.config.set_by_path(["conversations", event.conv_id, "discord_sync"], discord_channel)
+    try:
+      bot.config.set_by_path(["conversations", event.conv_id, "discord_sync"], discord_channel)
+    except KeyError:
+      bot.config.set_by_path(["conversations", event.conv_id], {"discord_sync": discord_channel})
     bot.config.save()
     msg = "Synced {} to {}".format(bot.conversations.get_name(event.conv), discord_channel)
     yield from bot.coro_send_message(event.conv_id, msg)

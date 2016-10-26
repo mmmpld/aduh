@@ -15,12 +15,9 @@
   "commands_enabled": true,
   "commands_user": [],
   "conversations": {
-    "CONV_ID": {
-      "autoreplies_enabled": false,
-      "commands_enabled": false,
-      "silentmode": true
     }
   },
+  "discord_token": "",
   "link_to_guide": "https://github.com/hangoutsbot/hangoutsbot/wiki/User-Guide",
   "mentionall": true,
   "mentionallwhitelist": [],
@@ -34,6 +31,5 @@
     "setrefreshtoken",
     "discord"
   ],
-  "silentmode": false,
-  "discord_token": ""
+  "silentmode": false
 }
