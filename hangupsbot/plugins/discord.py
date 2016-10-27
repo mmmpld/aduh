@@ -76,6 +76,15 @@ def _initialise(bot):
         # this isn't anything to worry about
         pass
 
+def save_heroku():
+    import sys, redis
+    print(os.path.join(sys.path[0], "config/config.json"))
+    with open(os.path.join(sys.path[0], "config/config.json"), 'r') as config_file:
+        hangoutsbot_config = config_file.read()
+
+    r = redis.from_url(os.environ.get("REDIS_URL"))
+    r.set('hangoutsbot_config', hangoutsbot_config)
+
 def _handle_hangout_message(bot, event):
     global sending
     discord_channel = bot.get_config_suboption(event.conv_id, "discord_sync")
@@ -106,6 +115,8 @@ def dsync(bot, event, discord_channel=None):
     except KeyError:
       bot.config.set_by_path(["conversations", event.conv_id], {"discord_sync": discord_channel})
     bot.config.save()
+    save_heroku()
+
     msg = "Synced {} to {}".format(bot.conversations.get_name(event.conv), discord_channel)
     yield from bot.coro_send_message(event.conv_id, msg)
     logger.debug(msg)
