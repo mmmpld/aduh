@@ -35,7 +35,7 @@ def on_ready():
 @client.event
 @asyncio.coroutine
 def on_message(message):
-    if message.author.bot:
+    if message.author == client.user:
         return
     global sending
     if 'whereami' in message.content:
@@ -57,11 +57,25 @@ def on_message(message):
               image_id = yield from _bot._client.upload_image(image_data, filename=a['filename'])
               yield from _bot.coro_send_message(conv_id, None, image_id=image_id, context={'discord': True})
 
+@client.event
+async def on_member_join(member):
+    server = member.server
+    fmt = 'Welcome {0.mention} to {1.name}!'
+    import time
+    time.sleep(1) # give new use time to complete join
+    await client.send_message(server, fmt.format(member, server))
+
+@client.event
+async def on_member_remove(member):
+    server = member.server
+    fmt = '{0} left {1.name}'
+    await client.send_message(server, fmt.format(member, server))
+
 def _initialise(bot):
+    print("starting discord")
     global _bot
     _bot = bot
-    #token = bot.get_config_option('discord_token')
-    token = os.environ['discord_token']
+    token = bot.get_config_option('discord_token')
     if not token:
         logger.error("discord_token not set")
         return
@@ -75,15 +89,6 @@ def _initialise(bot):
         # client.run will try start an event loop, however this will fail as hangoutsbot will have already started one
         # this isn't anything to worry about
         pass
-
-def save_heroku():
-    import sys, redis
-    print(os.path.join(sys.path[0], "config/config.json"))
-    with open(os.path.join(sys.path[0], "config/config.json"), 'r') as config_file:
-        hangoutsbot_config = config_file.read()
-
-    r = redis.from_url(os.environ.get("REDIS_URL"))
-    r.set('hangoutsbot_config', hangoutsbot_config)
 
 def _handle_hangout_message(bot, event):
     global sending
@@ -115,7 +120,6 @@ def dsync(bot, event, discord_channel=None):
     except KeyError:
       bot.config.set_by_path(["conversations", event.conv_id], {"discord_sync": discord_channel})
     bot.config.save()
-    save_heroku()
 
     msg = "Synced {} to {}".format(bot.conversations.get_name(event.conv), discord_channel)
     yield from bot.coro_send_message(event.conv_id, msg)
