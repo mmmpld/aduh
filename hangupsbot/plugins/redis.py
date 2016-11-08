@@ -4,12 +4,9 @@ By Richard Molloy
 
 '''
 
+import collections, datetime, functools, json, glob, logging, os, shutil, sys, time
 import plugins
-import logging
-import os
-import sys
 import redis
-import json
 import config
 from threading import Timer
 

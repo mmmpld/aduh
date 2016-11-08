@@ -7,7 +7,7 @@ jsonrpclib-pelix
 
 # PLUGIN DEPENDENCIES #
 beautifulsoup4
-#pushbullet.py # mentions
+pushbullet.py # mentions
 #goslate # translations
 #wikipedia
 #wolframalpha
