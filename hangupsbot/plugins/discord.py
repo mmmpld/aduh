@@ -19,13 +19,14 @@ import asyncio
 import logging
 import aiohttp
 import io
-import os
 
 logger = logging.getLogger(__name__)
 
 client = discord.Client()
 _bot = None
-sending = 0
+sending = {}
+
+already_seen_discord_messages = []
 
 @client.event
 @asyncio.coroutine
@@ -37,6 +38,10 @@ def on_ready():
 def on_message(message):
     if message.author == client.user:
         return
+    global already_seen_discord_messages
+    if message.id in already_seen_discord_messages:
+        return
+    already_seen_discord_messages.append(message.id)
     global sending
     if 'whereami' in message.content:
         yield from client.send_message(message.channel, message.channel.id)
@@ -45,7 +50,9 @@ def on_message(message):
     for conv_id, config in conv_config.items():
         if config.get("discord_sync") == message.channel.id:
             msg = "<b>{}</b>: {}".format(message.author.display_name, message.clean_content)
-            sending += 1
+            if conv_id not in sending:
+              sending[conv_id] = 0
+            sending[conv_id] += 1
             yield from _bot.coro_send_message(conv_id, msg, context={'discord': True})
 
             for a in message.attachments:
@@ -53,7 +60,7 @@ def on_message(message):
               raw = yield from r.read()
               image_data = io.BytesIO(raw)
               logger.debug("uploading: {}".format(a['url']))
-              sending += 1
+              sending[conv_id] += 1
               image_id = yield from _bot._client.upload_image(image_data, filename=a['filename'])
               yield from _bot.coro_send_message(conv_id, None, image_id=image_id, context={'discord': True})
 
@@ -72,7 +79,6 @@ async def on_member_remove(member):
     await client.send_message(server, fmt.format(member, server))
 
 def _initialise(bot):
-    print("starting discord")
     global _bot
     _bot = bot
     token = bot.get_config_option('discord_token')
@@ -90,24 +96,36 @@ def _initialise(bot):
         # this isn't anything to worry about
         pass
 
-def _handle_hangout_message(bot, event):
+def _handle_hangout_message(bot, event, command):
     global sending
     discord_channel = bot.get_config_suboption(event.conv_id, "discord_sync")
     if discord_channel:
         channel = client.get_channel(discord_channel)
         if channel:
-            if sending and ':' in event.text:
+            if sending.get(event.conv_id) and ':' in event.text:
                 # this hangout message originated in discord
-                sending -= 1
-                command = event.text.split(':')[1].strip()
-                event.text = command
-                logger.debug('attempting to execute %s', command)
+                sending[event.conv_id] -= 1
+                bits = event.text.split(':')
+                event._external_source = bits[0] + '@discord'
+                msg = bits[1].strip()
+                event.text = msg
+                logger.debug('attempting to execute %s', msg)
                 yield from _bot._handlers.handle_command(event)
+                yield from plugins.mentions._handle_mention(bot, event, command)
             else:
                 if event.from_bot:
                     yield from client.send_message(channel, event.text)
                 else:
                     fullname = event.user.full_name
+                    mentions = dict([(word.strip('@'),[]) for word in set(event.text.split()) if word.startswith('@')])
+                    for m in mentions:
+                      for member in client.get_all_members():
+                        permissions = channel.permissions_for(member)
+                        if permissions.read_messages and m.lower() in member.display_name.lower() and member.mention.startswith('<@!'):
+                          logger.debug("{} matches ({},{},{}) in {}".format(m, member.id, member.name, member.display_name, channel.name))
+                          mentions[m].append(member.mention)
+                      if len(mentions[m]) == 1:
+                        event.text = event.text.replace('@' + m, mentions[m][0])
                     msg = "**{}**: {}".format(fullname, event.text)
                     yield from client.send_message(channel, msg)
         else:
@@ -120,7 +138,6 @@ def dsync(bot, event, discord_channel=None):
     except KeyError:
       bot.config.set_by_path(["conversations", event.conv_id], {"discord_sync": discord_channel})
     bot.config.save()
-
     msg = "Synced {} to {}".format(bot.conversations.get_name(event.conv), discord_channel)
     yield from bot.coro_send_message(event.conv_id, msg)
     logger.debug(msg)
