@@ -10,10 +10,10 @@ with open(os.path.join(sys.path[0], "hangupsbot/config/cookies.json"), "w") as t
     text_file.write(gauth)
 
 r = redis.from_url(os.environ.get("REDIS_URL"))
-#print("creating config.json")
+print("creating config.json")
 gotten_config = r.get('config.json')
 gotten_config_str = str(gotten_config,'utf-8')
-print('set config to: ' + gotten_config_str)
+#print('set config to: ' + gotten_config_str)
 with open(os.path.join(sys.path[0], "hangupsbot/config/config.json"), "w") as text_file:
     text_file.write(gotten_config_str)
 
