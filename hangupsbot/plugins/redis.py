@@ -40,7 +40,6 @@ def save_redis():
     print('saved config to redis')
 
 def redis_save(self, delay=True):
-    print('overloaded save')
     #super(self).save()
     # with open(_bot.config.filename, 'w') as f:
     #     json.dump(_bot.config.config, f, indent=2, sort_keys=True)
