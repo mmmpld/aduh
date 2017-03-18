@@ -64,19 +64,19 @@ def on_message(message):
               image_id = yield from _bot._client.upload_image(image_data, filename=a['filename'])
               yield from _bot.coro_send_message(conv_id, None, image_id=image_id, context={'discord': True})
 
-@client.event
-async def on_member_join(member):
-    server = member.server
-    fmt = 'Welcome {0.mention} to {1.name}!'
-    import time
-    time.sleep(1) # give new use time to complete join
-    await client.send_message(server, fmt.format(member, server))
+# @client.event
+# async def on_member_join(member):
+#     server = member.server
+#     fmt = 'Welcome {0.mention} to {1.name}!'
+#     import time
+#     time.sleep(1) # give new use time to complete join
+#     await client.send_message(server, fmt.format(member, server))
 
-@client.event
-async def on_member_remove(member):
-    server = member.server
-    fmt = '{0} left {1.name}'
-    await client.send_message(server, fmt.format(member, server))
+# @client.event
+# async def on_member_remove(member):
+#     server = member.server
+#     fmt = '{0} left {1.name}'
+#     await client.send_message(server, fmt.format(member, server))
 
 def _initialise(bot):
     global _bot
