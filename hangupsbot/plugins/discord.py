@@ -10,7 +10,7 @@ Add the token for the bot to your config with the command "/bot config set disco
 Restart hangoutsbot
 Say "whereami" in a discord channel that the bot is in and it should respond with the channel id
 Say "/bot dsync CHANNEL_ID" in the hangout you want to sync
-
+ 
 '''
 
 import plugins
